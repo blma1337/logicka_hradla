@@ -374,7 +374,7 @@
         const PATHS = {
             XOR_BODY: `M73.52,20.74c-1.81,3.55-10.99,19.35-30.29,19.35h-15.91s-2.18,0-2.18,0c10.8-11.75,10.8-28.64,0-40.09h4.26s13.83,0,13.83,0C62.53,0,71.71,15.8,73.52,19.35l-.28.63`,
             XOR_SHIELD: `M21.34,1.7c10.29,11.63,10,25.33,0,36.69`,
-            // Upravená bublina, aby přesně seděla k souřadnicím
+            // Bubliny - středy upraveny pro dokonalé napojení
             BUBBLE_NOT: `M 72 20 m -4, 0 a 4,4 0 1,0 8,0 a 4,4 0 1,0 -8,0`, // Center 72
             BUBBLE_NAND: `M 74 20 m -4, 0 a 4,4 0 1,0 8,0 a 4,4 0 1,0 -8,0`, // Center 74
             BUBBLE_NOR: `M 77.5 20 m -4, 0 a 4,4 0 1,0 8,0 a 4,4 0 1,0 -8,0`, // Center 77.5
@@ -391,7 +391,7 @@
                 inputs: 1,
                 logic: (a) => a,
                 wireStart: 68, 
-                inputEndX: 30, 
+                inputEndX: 30, // Protaženo, aby šla čára pod trojúhelník
                 symbolPath: `<path d="${PATHS.BUFFER_BODY}" ${gateCommon} />`
             },
             {
@@ -400,10 +400,8 @@
                 desc: 'Obrací hodnotu vstupu.',
                 inputs: 1,
                 logic: (a) => !a,
-                // Buffer ends at 68. Bubble center 72 (rad 4). Ends at 76.
-                // WireStart 75 to be covered by bubble.
                 wireStart: 75,
-                inputEndX: 30,
+                inputEndX: 30, // Protaženo pod trojúhelník
                 symbolPath: `<path d="${PATHS.BUFFER_BODY}" ${gateCommon} /><path d="${PATHS.BUBBLE_NOT}" ${gateCommon} />`
             },
             {
@@ -412,9 +410,8 @@
                 desc: '1 když OBA vstupy jsou 1.',
                 inputs: 2,
                 logic: (a, b) => a && b,
-                // AND body ends at 52+18 = 70.
                 wireStart: 70, 
-                inputEndX: 30,
+                inputEndX: 30, // Protaženo pod tělo (začíná na 28)
                 symbolPath: `<path d="${PATHS.AND_BODY}" ${gateCommon} />`
             },
             {
@@ -423,9 +420,8 @@
                 desc: '0 pouze když OBA vstupy jsou 1.',
                 inputs: 2,
                 logic: (a, b) => !(a && b),
-                // AND ends 70. Bubble center 74. Ends 78. WireStart 77.
                 wireStart: 77, 
-                inputEndX: 30,
+                inputEndX: 30, // Protaženo pod tělo (začíná na 28)
                 symbolPath: `<path d="${PATHS.AND_BODY}" ${gateCommon} /><path d="${PATHS.BUBBLE_NAND}" ${gateCommon} />`
             },
             {
@@ -434,9 +430,8 @@
                 desc: '1 když ALESPOŇ JEDEN vstup je 1.',
                 inputs: 2,
                 logic: (a, b) => a || b,
-                // OR body ends at 73.5
                 wireStart: 73.5, 
-                inputEndX: 32, 
+                inputEndX: 32, // Protaženo hlouběji (tělo začíná cca 28-30)
                 symbolPath: `<path d="${PATHS.XOR_BODY}" ${gateCommon} />`
             },
             {
@@ -445,9 +440,8 @@
                 desc: '1 pouze když OBA vstupy jsou 0.',
                 inputs: 2,
                 logic: (a, b) => !(a || b),
-                // OR ends 73.5. Bubble center 77.5. Ends 81.5. WireStart 80.5.
                 wireStart: 80.5,
-                inputEndX: 32,
+                inputEndX: 32, // Protaženo hlouběji
                 symbolPath: `<path d="${PATHS.XOR_BODY}" ${gateCommon} /><path d="${PATHS.BUBBLE_NOR}" ${gateCommon} />`
             },
             {
@@ -457,8 +451,7 @@
                 inputs: 2,
                 logic: (a, b) => (a ? !b : b),
                 wireStart: 73.5,
-                // Shield is around 21. Stop wires at 23 to touch the convex side.
-                inputEndX: 23, 
+                inputEndX: 26, // Protaženo k bariéře
                 symbolPath: `<path d="${PATHS.XOR_SHIELD}" fill="none" stroke="currentColor" stroke-width="2" /><path d="${PATHS.XOR_BODY}" ${gateCommon} />`
             },
             {
@@ -468,7 +461,7 @@
                 inputs: 2,
                 logic: (a, b) => a === b,
                 wireStart: 80.5,
-                inputEndX: 23,
+                inputEndX: 26, // Protaženo k bariéře
                 symbolPath: `<path d="${PATHS.XOR_SHIELD}" fill="none" stroke="currentColor" stroke-width="2" /><path d="${PATHS.XOR_BODY}" ${gateCommon} /><path d="${PATHS.BUBBLE_NOR}" ${gateCommon} />`
             }
         ];
@@ -545,7 +538,6 @@
             
             const labelA = `<text x="5" y="8" fill="#94a3b8">A</text>`;
             const labelB = `<text x="5" y="28" fill="#94a3b8">B</text>`;
-            // Přejmenováno na Z a posunuto na pozici x=105, y=15 (nad drát)
             const labelZ = `<text x="105" y="15" fill="#94a3b8">Z</text>`;
 
             if (gate.inputs === 1) {
@@ -577,7 +569,7 @@
         function getFormula(gate, state, output) {
             const A = state.a;
             const B = state.b;
-            const Z = output; // Přejmenováno Y -> Z
+            const Z = output; 
             const overline = 'style="text-decoration: overline; text-decoration-thickness: 1.5px;"';
 
             switch(gate.id) {
