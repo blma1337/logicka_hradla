@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digitální Logika: Interaktivní Hradla (Offline)</title>
+    <style>
+        /* === CSS STYLES (Náhrada za Tailwind pro offline použití) === */
+        :root {
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #4f46e5;
+            --green: #22c55e;
+            --green-light: #dcfce7;
+            --green-dark: #166534;
+            --slate-50: #f8fafc;
+            --yellow-50: #fefce8;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin: 0 0 10px 0;
+            color: #312e81;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-box {
+            background-color: var(--primary);
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .code {
+            font-family: monospace;
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .code-green {
+            background: var(--green-light);
+            color: var(--green-dark);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: monospace;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            background: var(--slate-50);
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-weight: 700;
+            font-size: 1.125rem;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 4px 0 0 0;
+        }
+
+        .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            flex-grow: 1;
+        }
+
+        /* Visualization Area */
+        .vis-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .canvas-area {
+            position: relative;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            width: 100%;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        /* Controls */
+        .controls-left {
+            position: absolute;
+            left: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .btn-input {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            border: 1px solid;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .btn-off {
+            background: #f1f5f9;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+
+        .btn-off:hover { background: #e2e8f0; }
+
+        .btn-on {
+            background: var(--green);
+            color: white;
+            border-color: var(--green-dark);
+            box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+        }
+
+        .indicator-right {
+            position: absolute;
+            right: 10px;
+            z-index: 10;
+        }
+
+        .output-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            border: 2px solid;
+            transition: all 0.3s;
+        }
+
+        .out-off {
+            background: #f1f5f9;
+            color: #94a3b8;
+            border-color: #e2e8f0;
+        }
+
+        .out-on {
+            background: var(--green);
+            color: white;
+            border-color: var(--green-dark);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+            transform: scale(1.1);
+        }
+
+        /* SVG */
+        svg {
+            overflow: visible;
+        }
+        
+        text {
+            font-family: sans-serif;
+            font-size: 11px;
+            fill: #94a3b8;
+            font-weight: 600;
+        }
+
+        /* Formula Box Styling - Updated for Math Look */
+        .formula-box {
+            margin-top: 12px;
+            background: #eff6ff;
+            color: #1e3a8a;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', Times, serif; /* Matematický font */
+            font-size: 1.25rem; /* Větší písmo pro vzorce */
+            font-style: normal;
+            border: 1px solid #bfdbfe;
+            min-width: 120px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+        }
+
+        /* Table */
+        .table-wrapper {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        th {
+            background: var(--slate-50);
+            color: #475569;
+            font-weight: 600;
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 6px;
+            border-right: 1px solid #f1f5f9;
+            color: #64748b;
+        }
+
+        td:last-child { border-right: none; }
+
+        tr.active-row {
+            background-color: var(--yellow-50);
+        }
+
+        tr.active-row td {
+            color: var(--text-main);
+            font-weight: bold;
+        }
+
+        tr.active-row td.result-col {
+            color: var(--green-dark);
+            background-color: #f0fdf4;
+        }
+
+        /* Legend */
+        .legend {
+            margin-top: 40px;
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .legend h4 {
+            margin: 0 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .legend-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <header>
+            <h1>
+                <div class="icon-box">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+                </div>
+                Digitální Logika
+            </h1>
+            <p class="subtitle">
+                Interaktivní simulátor logických hradel. Nastavte vstupy 
+                <span class="code">0</span> nebo <span class="code-green">1</span> a sledujte změny.
+            </p>
+        </header>
+
+        <!-- Main Grid for Gates -->
+        <div id="gates-grid" class="grid"></div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <h4>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                Vysvětlivky
+            </h4>
+            <div class="legend-grid">
+                <div>
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                        <span class="btn-input btn-off" style="width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center;">0</span>
+                        <span><strong>Logická 0:</strong> Vypnuto (False)</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="btn-input btn-on" style="width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center;">1</span>
+                        <span><strong>Logická 1:</strong> Zapnuto (True)</span>
+                    </div>
+                </div>
+                <div>
+                    <p style="margin:0 0 8px 0;"><strong>Pravdivostní tabulka:</strong> Ukazuje výstup pro všechny kombinace.</p>
+                    <p style="margin:0;"><strong>Vzorec:</strong> Matematický zápis funkce (např. <span style="font-family:'Times New Roman', serif"><span style="text-decoration:overline">A · B</span></span>).</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // === KONFIGURACE DAT ===
+
+        // Styly pro SVG
+        const gateStyle = 'fill="white" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"';
+        const wireActive = "#22c55e";
+        const wireInactive = "#94a3b8";
+
+        // Definice hradel
+        const GATES = [
+            {
+                id: 'buffer',
+                name: 'Hradlo YES (Buffer)',
+                desc: 'Výstup kopíruje vstup.',
+                inputs: 1,
+                logic: (a) => a,
+                wireStart: 70, // Start výstupního drátu
+                inputEndX: 30, // Konec vstupního drátu
+                symbolPath: `<path d="M 30 10 L 70 30 L 30 50 Z" ${gateStyle} />`
+            },
+            {
+                id: 'not',
+                name: 'Hradlo NOT (Negace)',
+                desc: 'Obrací hodnotu vstupu.',
+                inputs: 1,
+                logic: (a) => !a,
+                wireStart: 82,
+                inputEndX: 30,
+                symbolPath: `<path d="M 30 10 L 70 30 L 30 50 Z" ${gateStyle} /><circle cx="76" cy="30" r="5" ${gateStyle} />`
+            },
+            {
+                id: 'and',
+                name: 'Hradlo AND',
+                desc: 'Výstup je 1, pouze když jsou oba vstupy 1.',
+                inputs: 2,
+                logic: (a, b) => a && b,
+                wireStart: 80,
+                inputEndX: 30,
+                symbolPath: `<path d="M 30 10 H 55 A 25 20 0 0 1 55 50 H 30 Z" ${gateStyle} />`
+            },
+            {
+                id: 'nand',
+                name: 'Hradlo NAND',
+                desc: 'Výstup je 0, pouze když jsou oba vstupy 1.',
+                inputs: 2,
+                logic: (a, b) => !(a && b),
+                wireStart: 92,
+                inputEndX: 30,
+                symbolPath: `<path d="M 30 10 H 55 A 25 20 0 0 1 55 50 H 30 Z" ${gateStyle} /><circle cx="86" cy="30" r="5" ${gateStyle} />`
+            },
+            {
+                id: 'or',
+                name: 'Hradlo OR',
+                desc: 'Výstup je 1, když je alespoň jeden vstup 1.',
+                inputs: 2,
+                logic: (a, b) => a || b,
+                wireStart: 90,
+                inputEndX: 40,
+                symbolPath: `<path d="M 30 10 Q 48 30 30 50 C 55 50 75 45 90 30 C 75 15 55 10 30 10 Z" ${gateStyle} />`
+            },
+            {
+                id: 'nor',
+                name: 'Hradlo NOR',
+                desc: 'Výstup je 1, pouze když jsou oba vstupy 0.',
+                inputs: 2,
+                logic: (a, b) => !(a || b),
+                wireStart: 102,
+                inputEndX: 40,
+                symbolPath: `<path d="M 30 10 Q 48 30 30 50 C 55 50 75 45 90 30 C 75 15 55 10 30 10 Z" ${gateStyle} /><circle cx="96" cy="30" r="5" ${gateStyle} />`
+            },
+            {
+                id: 'xor',
+                name: 'Hradlo XOR',
+                desc: 'Výstup je 1, pokud se vstupy liší.',
+                inputs: 2,
+                logic: (a, b) => (a ? !b : b),
+                wireStart: 95,
+                inputEndX: 28,
+                symbolPath: `<path d="M 22 10 Q 40 30 22 50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" /><path d="M 35 10 Q 53 30 35 50 C 60 50 80 45 95 30 C 80 15 60 10 35 10 Z" ${gateStyle} />`
+            },
+            {
+                id: 'xnor',
+                name: 'Hradlo XNOR',
+                desc: 'Výstup je 1, pokud jsou vstupy shodné.',
+                inputs: 2,
+                logic: (a, b) => a === b,
+                wireStart: 107,
+                inputEndX: 28,
+                symbolPath: `<path d="M 22 10 Q 40 30 22 50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" /><path d="M 35 10 Q 53 30 35 50 C 60 50 80 45 95 30 C 80 15 60 10 35 10 Z" ${gateStyle} /><circle cx="101" cy="30" r="5" ${gateStyle} />`
+            }
+        ];
+
+        // Stav aplikace (uchovává hodnoty vstupů pro každé hradlo)
+        const appState = {};
+        GATES.forEach(g => {
+            appState[g.id] = { a: 0, b: 0 };
+        });
+
+        // === LOGIKA APLIKACE ===
+
+        function renderApp() {
+            const grid = document.getElementById('gates-grid');
+            grid.innerHTML = '';
+            GATES.forEach(gate => {
+                grid.appendChild(createGateCard(gate));
+            });
+        }
+
+        function createGateCard(gate) {
+            const state = appState[gate.id];
+            const outputBool = gate.inputs === 1 ? gate.logic(state.a) : gate.logic(state.a, state.b);
+            const output = outputBool ? 1 : 0;
+            
+            // Vytvoření elementu karty
+            const card = document.createElement('div');
+            card.className = 'card';
+
+            // HTML šablona karty
+            card.innerHTML = `
+                <div class="card-header">
+                    <h3 class="card-title">${gate.name}</h3>
+                    <p class="card-desc">${gate.desc}</p>
+                </div>
+                <div class="card-body">
+                    <div class="vis-container">
+                        <div class="canvas-area">
+                            <div class="controls-left">
+                                <button class="btn-input ${state.a ? 'btn-on' : 'btn-off'}" onclick="toggleInput('${gate.id}', 'a')">${state.a}</button>
+                                ${gate.inputs === 2 ? `<button class="btn-input ${state.b ? 'btn-on' : 'btn-off'}" onclick="toggleInput('${gate.id}', 'b')">${state.b}</button>` : ''}
+                            </div>
+                            
+                            <div class="indicator-right">
+                                <div class="output-circle ${output ? 'out-on' : 'out-off'}">${output}</div>
+                            </div>
+
+                            ${renderSVG(gate, state, output)}
+                        </div>
+                        <div class="formula-box">
+                            ${getFormula(gate, state, output)}
+                        </div>
+                    </div>
+                    
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>A</th>
+                                    ${gate.inputs === 2 ? '<th>B</th>' : ''}
+                                    <th>Y</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${generateTableRows(gate, state)}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        function renderSVG(gate, state, output) {
+            const width = 140;
+            const height = 60;
+            const ieX = gate.inputEndX; // inputEndX
+            const wColA = state.a ? wireActive : wireInactive;
+            const wColB = state.b ? wireActive : wireInactive;
+            const wColOut = output ? wireActive : wireInactive;
+            
+            // Posun začátku drátu na X=20 a textu na X=10, aby se nepřekrývaly
+            const wireStartX = 20; 
+            const textX = 10;
+
+            let wiresHTML = '';
+            
+            if (gate.inputs === 1) {
+                wiresHTML = `
+                    <line x1="${wireStartX}" y1="30" x2="${ieX}" y2="30" stroke="${wColA}" stroke-width="3" />
+                    <text x="${textX}" y="34" text-anchor="middle">A</text>
+                `;
+            } else {
+                wiresHTML = `
+                    <line x1="${wireStartX}" y1="20" x2="${ieX}" y2="20" stroke="${wColA}" stroke-width="3" />
+                    <line x1="${wireStartX}" y1="40" x2="${ieX}" y2="40" stroke="${wColB}" stroke-width="3" />
+                    <text x="${textX}" y="24" text-anchor="middle">A</text>
+                    <text x="${textX}" y="44" text-anchor="middle">B</text>
+                `;
+            }
+
+            return `
+                <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+                    ${wiresHTML}
+                    <line x1="${gate.wireStart}" y1="30" x2="115" y2="30" stroke="${wColOut}" stroke-width="3" />
+                    <g class="gate-symbol">${gate.symbolPath}</g>
+                    <text x="120" y="34">Y</text>
+                </svg>
+            `;
+        }
+
+        // Upravená funkce pro generování HTML vzorců podle obrázku
+        function getFormula(gate, state, output) {
+            const A = state.a;
+            const B = state.b;
+            const Y = output;
+            
+            // Styl pro "čáru nad" (negaci)
+            // text-decoration-thickness zajistí lepší viditelnost
+            const overline = 'style="text-decoration: overline; text-decoration-thickness: 1.5px;"';
+
+            switch(gate.id) {
+                case 'buffer': return `${Y} = ${A}`;
+                case 'not':    return `${Y} = <span ${overline}>${A}</span>`;
+                case 'and':    return `${Y} = ${A} · ${B}`;
+                case 'nand':   return `${Y} = <span ${overline}>${A} · ${B}</span>`;
+                case 'or':     return `${Y} = ${A} + ${B}`;
+                case 'nor':    return `${Y} = <span ${overline}>${A} + ${B}</span>`;
+                case 'xor':    return `${Y} = ${A} ⊕ ${B}`;
+                case 'xnor':   return `${Y} = <span ${overline}>${A} ⊕ ${B}</span>`;
+                default:       return '';
+            }
+        }
+
+        function generateTableRows(gate, state) {
+            const rows = [];
+            // Generování kombinací
+            if (gate.inputs === 1) {
+                rows.push([0], [1]);
+            } else {
+                rows.push([0, 0], [0, 1], [1, 0], [1, 1]);
+            }
+
+            return rows.map(inputs => {
+                const resBool = gate.inputs === 1 ? gate.logic(inputs[0]) : gate.logic(inputs[0], inputs[1]);
+                const res = resBool ? 1 : 0;
+                
+                // Zjištění, zda je řádek aktivní
+                let isActive = false;
+                if (gate.inputs === 1) isActive = (inputs[0] === state.a);
+                else isActive = (inputs[0] === state.a && inputs[1] === state.b);
+
+                const activeClass = isActive ? 'class="active-row"' : '';
+                
+                let html = `<tr ${activeClass}>`;
+                html += `<td>${inputs[0]}</td>`;
+                if (gate.inputs === 2) html += `<td>${inputs[1]}</td>`;
+                html += `<td class="result-col">${res}</td></tr>`;
+                return html;
+            }).join('');
+        }
+
+        // Global function for onclick events
+        window.toggleInput = function(gateId, input) {
+            const current = appState[gateId][input];
+            appState[gateId][input] = current === 0 ? 1 : 0;
+            renderApp(); // Překreslit celou aplikaci
+        };
+
+        // Init
+        renderApp();
+
+    </script>
+</body>
+</html>
