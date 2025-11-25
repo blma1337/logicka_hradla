@@ -372,7 +372,8 @@
 
         // SVG Cesty
         const PATHS = {
-            XOR_BODY: `M73.52,20.74c-1.81,3.55-10.99,19.35-30.29,19.35h-15.91s-2.18,0-2.18,0c10.8-11.75,10.8-28.64,0-40.09h4.26s13.83,0,13.83,0C62.53,0,71.71,15.8,73.52,19.35l-.28.63`,
+            // Přidáno Z na konec pro uzavření cesty
+            XOR_BODY: `M73.52,20.74c-1.81,3.55-10.99,19.35-30.29,19.35h-15.91s-2.18,0-2.18,0c10.8-11.75,10.8-28.64,0-40.09h4.26s13.83,0,13.83,0C62.53,0,71.71,15.8,73.52,19.35l-.28.63Z`,
             XOR_SHIELD: `M21.34,1.7c10.29,11.63,10,25.33,0,36.69`,
             // Bubliny - středy upraveny pro dokonalé napojení
             BUBBLE_NOT: `M 72 20 m -4, 0 a 4,4 0 1,0 8,0 a 4,4 0 1,0 -8,0`, // Center 72
@@ -532,36 +533,30 @@
             const wColOut = output ? wireActive : wireInactive;
             
             const ieX = gate.inputEndX;
-            const wireStartX = 0; 
+            // Vodiče začínají na X=19 (přibližně za tlačítky)
+            const wireStartX = 19; 
 
             let wiresHTML = '';
             
-            const labelA = `<text x="5" y="8" fill="#94a3b8">A</text>`;
-            const labelB = `<text x="5" y="28" fill="#94a3b8">B</text>`;
-            const labelZ = `<text x="105" y="15" fill="#94a3b8">Z</text>`;
-
             if (gate.inputs === 1) {
                 wiresHTML = `
                     <path d="M ${wireStartX},20 H ${ieX}" fill="none" stroke="${wColA}" stroke-width="1.5" />
-                    <text x="5" y="18" fill="#94a3b8">A</text>
                 `;
             } else {
                 wiresHTML = `
                     <path d="M ${wireStartX},10 H ${ieX}" fill="none" stroke="${wColA}" stroke-width="1.5" />
                     <path d="M ${wireStartX},30 H ${ieX}" fill="none" stroke="${wColB}" stroke-width="1.5" />
-                    ${labelA}
-                    ${labelB}
                 `;
             }
 
-            const outputWire = `<path d="M 125,20 H ${gate.wireStart}" fill="none" stroke="${wColOut}" stroke-width="1.5" />`;
+            // Výstupní vodič končí na X=106 (před indikátorem)
+            const outputWire = `<path d="M 106,20 H ${gate.wireStart}" fill="none" stroke="${wColOut}" stroke-width="1.5" />`;
 
             return `
                 <svg width="100%" height="100%" viewBox="${viewBox}" preserveAspectRatio="xMidYMid meet">
                     ${wiresHTML}
                     ${outputWire}
                     <g class="gate-symbol">${gate.symbolPath}</g>
-                    ${labelZ}
                 </svg>
             `;
         }
