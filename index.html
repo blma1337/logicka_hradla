@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digitální Logika: Interaktivní Hradla (Offline)</title>
+    <title>Digitální Logika: Interaktivní Hradla</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect x=%2210%22 y=%2210%22 width=%2280%22 height=%2280%22 rx=%2220%22 fill=%22%234f46e5%22/><path d=%22M35 50h30M65 50c0 15-10 25-30 25M65 50c0-15-10-25-30-25%22 stroke=%22white%22 stroke-width=%228%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><circle cx=%2282%22 cy=%2250%22 r=%226%22 fill=%22white%22/></svg>">
     <style>
-        /* === CSS STYLES (Náhrada za Tailwind pro offline použití) === */
         :root {
             --bg-body: #f1f5f9;
             --bg-card: #ffffff;
@@ -34,7 +34,6 @@
             margin: 0 auto;
         }
 
-        /* Header */
         header {
             margin-bottom: 40px;
             border-bottom: 1px solid var(--border);
@@ -82,14 +81,12 @@
             font-family: monospace;
         }
 
-        /* Grid */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 24px;
         }
 
-        /* Card */
         .card {
             background: var(--bg-card);
             border-radius: 12px;
@@ -133,7 +130,6 @@
             flex-grow: 1;
         }
 
-        /* Visualization Area */
         .vis-container {
             display: flex;
             flex-direction: column;
@@ -153,7 +149,6 @@
             box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
         }
 
-        /* Controls */
         .controls-left {
             position: absolute;
             left: 10px;
@@ -223,27 +218,25 @@
             transform: scale(1.1);
         }
 
-        /* SVG */
         svg {
             overflow: visible;
         }
         
         text {
             font-family: sans-serif;
-            font-size: 11px;
+            font-size: 5px; 
             fill: #94a3b8;
             font-weight: 600;
         }
 
-        /* Formula Box Styling - Updated for Math Look */
         .formula-box {
             margin-top: 12px;
             background: #eff6ff;
             color: #1e3a8a;
             padding: 8px 20px;
             border-radius: 8px;
-            font-family: 'Times New Roman', Times, serif; /* Matematický font */
-            font-size: 1.25rem; /* Větší písmo pro vzorce */
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.25rem;
             font-style: normal;
             border: 1px solid #bfdbfe;
             min-width: 120px;
@@ -254,7 +247,6 @@
             height: 40px;
         }
 
-        /* Table */
         .table-wrapper {
             width: 100%;
             border: 1px solid var(--border);
@@ -299,7 +291,6 @@
             background-color: #f0fdf4;
         }
 
-        /* Legend */
         .legend {
             margin-top: 40px;
             background: white;
@@ -346,10 +337,8 @@
             </p>
         </header>
 
-        <!-- Main Grid for Gates -->
         <div id="gates-grid" class="grid"></div>
 
-        <!-- Legend -->
         <div class="legend">
             <h4>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
@@ -368,7 +357,7 @@
                 </div>
                 <div>
                     <p style="margin:0 0 8px 0;"><strong>Pravdivostní tabulka:</strong> Ukazuje výstup pro všechny kombinace.</p>
-                    <p style="margin:0;"><strong>Vzorec:</strong> Matematický zápis funkce (např. <span style="font-family:'Times New Roman', serif"><span style="text-decoration:overline">A · B</span></span>).</p>
+                    <p style="margin:0;"><strong>Vzorec:</strong> Matematický zápis funkce.</p>
                 </div>
             </div>
         </div>
@@ -376,14 +365,24 @@
     </div>
 
     <script>
-        // === KONFIGURACE DAT ===
-
-        // Styly pro SVG
-        const gateStyle = 'fill="white" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"';
+        // === KONFIGURACE ===
+        const gateCommon = 'fill="white" stroke="currentColor" stroke-width="1.5"'; 
         const wireActive = "#22c55e";
-        const wireInactive = "#94a3b8";
+        const wireInactive = "#94a3b8"; 
 
-        // Definice hradel
+        // SVG Cesty
+        const PATHS = {
+            XOR_BODY: `M73.52,20.74c-1.81,3.55-10.99,19.35-30.29,19.35h-15.91s-2.18,0-2.18,0c10.8-11.75,10.8-28.64,0-40.09h4.26s13.83,0,13.83,0C62.53,0,71.71,15.8,73.52,19.35l-.28.63`,
+            XOR_SHIELD: `M21.34,1.7c10.29,11.63,10,25.33,0,36.69`,
+            // Upravená bublina, aby přesně seděla k souřadnicím
+            BUBBLE_NOT: `M 72 20 m -4, 0 a 4,4 0 1,0 8,0 a 4,4 0 1,0 -8,0`, // Center 72
+            BUBBLE_NAND: `M 74 20 m -4, 0 a 4,4 0 1,0 8,0 a 4,4 0 1,0 -8,0`, // Center 74
+            BUBBLE_NOR: `M 77.5 20 m -4, 0 a 4,4 0 1,0 8,0 a 4,4 0 1,0 -8,0`, // Center 77.5
+            
+            AND_BODY: `M 28 2 H 52 A 18 18 0 0 1 52 38 H 28 Z`,
+            BUFFER_BODY: `M 28 2 V 38 L 68 20 Z`
+        };
+
         const GATES = [
             {
                 id: 'buffer',
@@ -391,89 +390,91 @@
                 desc: 'Výstup kopíruje vstup.',
                 inputs: 1,
                 logic: (a) => a,
-                wireStart: 70, // Start výstupního drátu
-                inputEndX: 30, // Konec vstupního drátu
-                symbolPath: `<path d="M 30 10 L 70 30 L 30 50 Z" ${gateStyle} />`
+                wireStart: 68, 
+                inputEndX: 30, 
+                symbolPath: `<path d="${PATHS.BUFFER_BODY}" ${gateCommon} />`
             },
             {
                 id: 'not',
-                name: 'Hradlo NOT (Negace)',
+                name: 'Hradlo NOT',
                 desc: 'Obrací hodnotu vstupu.',
                 inputs: 1,
                 logic: (a) => !a,
-                wireStart: 82,
+                // Buffer ends at 68. Bubble center 72 (rad 4). Ends at 76.
+                // WireStart 75 to be covered by bubble.
+                wireStart: 75,
                 inputEndX: 30,
-                symbolPath: `<path d="M 30 10 L 70 30 L 30 50 Z" ${gateStyle} /><circle cx="76" cy="30" r="5" ${gateStyle} />`
+                symbolPath: `<path d="${PATHS.BUFFER_BODY}" ${gateCommon} /><path d="${PATHS.BUBBLE_NOT}" ${gateCommon} />`
             },
             {
                 id: 'and',
                 name: 'Hradlo AND',
-                desc: 'Výstup je 1, pouze když jsou oba vstupy 1.',
+                desc: '1 když OBA vstupy jsou 1.',
                 inputs: 2,
                 logic: (a, b) => a && b,
-                wireStart: 80,
+                // AND body ends at 52+18 = 70.
+                wireStart: 70, 
                 inputEndX: 30,
-                symbolPath: `<path d="M 30 10 H 55 A 25 20 0 0 1 55 50 H 30 Z" ${gateStyle} />`
+                symbolPath: `<path d="${PATHS.AND_BODY}" ${gateCommon} />`
             },
             {
                 id: 'nand',
                 name: 'Hradlo NAND',
-                desc: 'Výstup je 0, pouze když jsou oba vstupy 1.',
+                desc: '0 pouze když OBA vstupy jsou 1.',
                 inputs: 2,
                 logic: (a, b) => !(a && b),
-                wireStart: 92,
+                // AND ends 70. Bubble center 74. Ends 78. WireStart 77.
+                wireStart: 77, 
                 inputEndX: 30,
-                symbolPath: `<path d="M 30 10 H 55 A 25 20 0 0 1 55 50 H 30 Z" ${gateStyle} /><circle cx="86" cy="30" r="5" ${gateStyle} />`
+                symbolPath: `<path d="${PATHS.AND_BODY}" ${gateCommon} /><path d="${PATHS.BUBBLE_NAND}" ${gateCommon} />`
             },
             {
                 id: 'or',
                 name: 'Hradlo OR',
-                desc: 'Výstup je 1, když je alespoň jeden vstup 1.',
+                desc: '1 když ALESPOŇ JEDEN vstup je 1.',
                 inputs: 2,
                 logic: (a, b) => a || b,
-                wireStart: 90,
-                inputEndX: 40,
-                symbolPath: `<path d="M 30 10 Q 48 30 30 50 C 55 50 75 45 90 30 C 75 15 55 10 30 10 Z" ${gateStyle} />`
+                // OR body ends at 73.5
+                wireStart: 73.5, 
+                inputEndX: 32, 
+                symbolPath: `<path d="${PATHS.XOR_BODY}" ${gateCommon} />`
             },
             {
                 id: 'nor',
                 name: 'Hradlo NOR',
-                desc: 'Výstup je 1, pouze když jsou oba vstupy 0.',
+                desc: '1 pouze když OBA vstupy jsou 0.',
                 inputs: 2,
                 logic: (a, b) => !(a || b),
-                wireStart: 102,
-                inputEndX: 40,
-                symbolPath: `<path d="M 30 10 Q 48 30 30 50 C 55 50 75 45 90 30 C 75 15 55 10 30 10 Z" ${gateStyle} /><circle cx="96" cy="30" r="5" ${gateStyle} />`
+                // OR ends 73.5. Bubble center 77.5. Ends 81.5. WireStart 80.5.
+                wireStart: 80.5,
+                inputEndX: 32,
+                symbolPath: `<path d="${PATHS.XOR_BODY}" ${gateCommon} /><path d="${PATHS.BUBBLE_NOR}" ${gateCommon} />`
             },
             {
                 id: 'xor',
                 name: 'Hradlo XOR',
-                desc: 'Výstup je 1, pokud se vstupy liší.',
+                desc: '1 pokud se vstupy LIŠÍ.',
                 inputs: 2,
                 logic: (a, b) => (a ? !b : b),
-                wireStart: 95,
-                inputEndX: 28,
-                symbolPath: `<path d="M 22 10 Q 40 30 22 50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" /><path d="M 35 10 Q 53 30 35 50 C 60 50 80 45 95 30 C 80 15 60 10 35 10 Z" ${gateStyle} />`
+                wireStart: 73.5,
+                // Shield is around 21. Stop wires at 23 to touch the convex side.
+                inputEndX: 23, 
+                symbolPath: `<path d="${PATHS.XOR_SHIELD}" fill="none" stroke="currentColor" stroke-width="2" /><path d="${PATHS.XOR_BODY}" ${gateCommon} />`
             },
             {
                 id: 'xnor',
                 name: 'Hradlo XNOR',
-                desc: 'Výstup je 1, pokud jsou vstupy shodné.',
+                desc: '1 pokud jsou vstupy SHODNÉ.',
                 inputs: 2,
                 logic: (a, b) => a === b,
-                wireStart: 107,
-                inputEndX: 28,
-                symbolPath: `<path d="M 22 10 Q 40 30 22 50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" /><path d="M 35 10 Q 53 30 35 50 C 60 50 80 45 95 30 C 80 15 60 10 35 10 Z" ${gateStyle} /><circle cx="101" cy="30" r="5" ${gateStyle} />`
+                wireStart: 80.5,
+                inputEndX: 23,
+                symbolPath: `<path d="${PATHS.XOR_SHIELD}" fill="none" stroke="currentColor" stroke-width="2" /><path d="${PATHS.XOR_BODY}" ${gateCommon} /><path d="${PATHS.BUBBLE_NOR}" ${gateCommon} />`
             }
         ];
 
-        // Stav aplikace (uchovává hodnoty vstupů pro každé hradlo)
         const appState = {};
-        GATES.forEach(g => {
-            appState[g.id] = { a: 0, b: 0 };
-        });
-
-        // === LOGIKA APLIKACE ===
+        GATES.forEach(g => appState[g.id] = { a: 0, b: 0 });
 
         function renderApp() {
             const grid = document.getElementById('gates-grid');
@@ -488,11 +489,8 @@
             const outputBool = gate.inputs === 1 ? gate.logic(state.a) : gate.logic(state.a, state.b);
             const output = outputBool ? 1 : 0;
             
-            // Vytvoření elementu karty
             const card = document.createElement('div');
             card.className = 'card';
-
-            // HTML šablona karty
             card.innerHTML = `
                 <div class="card-header">
                     <h3 class="card-title">${gate.name}</h3>
@@ -505,25 +503,22 @@
                                 <button class="btn-input ${state.a ? 'btn-on' : 'btn-off'}" onclick="toggleInput('${gate.id}', 'a')">${state.a}</button>
                                 ${gate.inputs === 2 ? `<button class="btn-input ${state.b ? 'btn-on' : 'btn-off'}" onclick="toggleInput('${gate.id}', 'b')">${state.b}</button>` : ''}
                             </div>
-                            
                             <div class="indicator-right">
                                 <div class="output-circle ${output ? 'out-on' : 'out-off'}">${output}</div>
                             </div>
-
                             ${renderSVG(gate, state, output)}
                         </div>
                         <div class="formula-box">
                             ${getFormula(gate, state, output)}
                         </div>
                     </div>
-                    
                     <div class="table-wrapper">
                         <table>
                             <thead>
                                 <tr>
                                     <th>A</th>
                                     ${gate.inputs === 2 ? '<th>B</th>' : ''}
-                                    <th>Y</th>
+                                    <th>Z</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -537,84 +532,78 @@
         }
 
         function renderSVG(gate, state, output) {
-            const width = 140;
-            const height = 60;
-            const ieX = gate.inputEndX; // inputEndX
+            const viewBox = "0 -5 125 50"; 
+            
             const wColA = state.a ? wireActive : wireInactive;
             const wColB = state.b ? wireActive : wireInactive;
             const wColOut = output ? wireActive : wireInactive;
             
-            // Posun začátku drátu na X=20 a textu na X=10, aby se nepřekrývaly
-            const wireStartX = 20; 
-            const textX = 10;
+            const ieX = gate.inputEndX;
+            const wireStartX = 0; 
 
             let wiresHTML = '';
             
+            const labelA = `<text x="5" y="8" fill="#94a3b8">A</text>`;
+            const labelB = `<text x="5" y="28" fill="#94a3b8">B</text>`;
+            // Přejmenováno na Z a posunuto na pozici x=105, y=15 (nad drát)
+            const labelZ = `<text x="105" y="15" fill="#94a3b8">Z</text>`;
+
             if (gate.inputs === 1) {
                 wiresHTML = `
-                    <line x1="${wireStartX}" y1="30" x2="${ieX}" y2="30" stroke="${wColA}" stroke-width="3" />
-                    <text x="${textX}" y="34" text-anchor="middle">A</text>
+                    <path d="M ${wireStartX},20 H ${ieX}" fill="none" stroke="${wColA}" stroke-width="1.5" />
+                    <text x="5" y="18" fill="#94a3b8">A</text>
                 `;
             } else {
                 wiresHTML = `
-                    <line x1="${wireStartX}" y1="20" x2="${ieX}" y2="20" stroke="${wColA}" stroke-width="3" />
-                    <line x1="${wireStartX}" y1="40" x2="${ieX}" y2="40" stroke="${wColB}" stroke-width="3" />
-                    <text x="${textX}" y="24" text-anchor="middle">A</text>
-                    <text x="${textX}" y="44" text-anchor="middle">B</text>
+                    <path d="M ${wireStartX},10 H ${ieX}" fill="none" stroke="${wColA}" stroke-width="1.5" />
+                    <path d="M ${wireStartX},30 H ${ieX}" fill="none" stroke="${wColB}" stroke-width="1.5" />
+                    ${labelA}
+                    ${labelB}
                 `;
             }
 
+            const outputWire = `<path d="M 125,20 H ${gate.wireStart}" fill="none" stroke="${wColOut}" stroke-width="1.5" />`;
+
             return `
-                <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+                <svg width="100%" height="100%" viewBox="${viewBox}" preserveAspectRatio="xMidYMid meet">
                     ${wiresHTML}
-                    <line x1="${gate.wireStart}" y1="30" x2="115" y2="30" stroke="${wColOut}" stroke-width="3" />
+                    ${outputWire}
                     <g class="gate-symbol">${gate.symbolPath}</g>
-                    <text x="120" y="34">Y</text>
+                    ${labelZ}
                 </svg>
             `;
         }
 
-        // Upravená funkce pro generování HTML vzorců podle obrázku
         function getFormula(gate, state, output) {
             const A = state.a;
             const B = state.b;
-            const Y = output;
-            
-            // Styl pro "čáru nad" (negaci)
-            // text-decoration-thickness zajistí lepší viditelnost
+            const Z = output; // Přejmenováno Y -> Z
             const overline = 'style="text-decoration: overline; text-decoration-thickness: 1.5px;"';
 
             switch(gate.id) {
-                case 'buffer': return `${Y} = ${A}`;
-                case 'not':    return `${Y} = <span ${overline}>${A}</span>`;
-                case 'and':    return `${Y} = ${A} · ${B}`;
-                case 'nand':   return `${Y} = <span ${overline}>${A} · ${B}</span>`;
-                case 'or':     return `${Y} = ${A} + ${B}`;
-                case 'nor':    return `${Y} = <span ${overline}>${A} + ${B}</span>`;
-                case 'xor':    return `${Y} = ${A} ⊕ ${B}`;
-                case 'xnor':   return `${Y} = <span ${overline}>${A} ⊕ ${B}</span>`;
+                case 'buffer': return `${Z} = ${A}`;
+                case 'not':    return `${Z} = <span ${overline}>${A}</span>`;
+                case 'and':    return `${Z} = ${A} · ${B}`;
+                case 'nand':   return `${Z} = <span ${overline}>${A} · ${B}</span>`;
+                case 'or':     return `${Z} = ${A} + ${B}`;
+                case 'nor':    return `${Z} = <span ${overline}>${A} + ${B}</span>`;
+                case 'xor':    return `${Z} = ${A} ⊕ ${B}`;
+                case 'xnor':   return `${Z} = <span ${overline}>${A} ⊕ ${B}</span>`;
                 default:       return '';
             }
         }
 
         function generateTableRows(gate, state) {
             const rows = [];
-            // Generování kombinací
-            if (gate.inputs === 1) {
-                rows.push([0], [1]);
-            } else {
-                rows.push([0, 0], [0, 1], [1, 0], [1, 1]);
-            }
+            if (gate.inputs === 1) rows.push([0], [1]);
+            else rows.push([0, 0], [0, 1], [1, 0], [1, 1]);
 
             return rows.map(inputs => {
                 const resBool = gate.inputs === 1 ? gate.logic(inputs[0]) : gate.logic(inputs[0], inputs[1]);
                 const res = resBool ? 1 : 0;
-                
-                // Zjištění, zda je řádek aktivní
                 let isActive = false;
                 if (gate.inputs === 1) isActive = (inputs[0] === state.a);
                 else isActive = (inputs[0] === state.a && inputs[1] === state.b);
-
                 const activeClass = isActive ? 'class="active-row"' : '';
                 
                 let html = `<tr ${activeClass}>`;
@@ -625,16 +614,13 @@
             }).join('');
         }
 
-        // Global function for onclick events
         window.toggleInput = function(gateId, input) {
             const current = appState[gateId][input];
             appState[gateId][input] = current === 0 ? 1 : 0;
-            renderApp(); // Překreslit celou aplikaci
+            renderApp();
         };
 
-        // Init
         renderApp();
-
     </script>
 </body>
 </html>
